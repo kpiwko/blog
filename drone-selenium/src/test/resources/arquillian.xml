@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <!-- Copy the deployed archive to target directory so user can check its content -->
+    <engine>
+        <property name="deploymentExportPath">target/</property>
+    </engine>
+
+    <container qualifier="jbossas-remote-7" default="true">
+        <protocol type="jmx-as7">
+            <property name="executionType">REMOTE</property>
+        </protocol>
+        <configuration>
+            <property name="jbossHome">target/jboss-as-7.0.1.Final</property>
+        </configuration>
+    </container>
+
+</arquillian>
