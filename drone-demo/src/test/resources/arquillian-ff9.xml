@@ -19,28 +19,9 @@
         </configuration>
     </container>
 
-    <container qualifier="openshift">
-        <configuration>
-            <property name="namespace">arqtest</property>
-            <property name="application">drone</property>
-            <property name="sshUserName">2a15cbe193da441f9f3a9aa4039695b1</property>
-            <!-- Passphrase can be specified by defining the environment variable SSH_PASSPHRASE -->
-            <!-- <property name="passphrase"></property> -->
-            <property name="login">kpiwko@redhat.com</property>
-        </configuration>
-    </container>
-
-    <extension qualifier="ajocado">
-        <property name="browser">*firefox</property>
-    </extension>
-
-    <extension qualifier="ajocado-firefox9">
-        <property name="browser">*firefox /opt/firefox-9.0.1/firefox-bin</property>
-    </extension>
-
     <extension qualifier="webdriver">
-        <property name="chromeBinary">/opt/google/chrome/chrome</property>
-        <property name="chromeSwitches">--user-data-dir=/tmp --disable-web-security</property>
+        <property name="implementationClass">org.openqa.selenium.firefox.FirefoxDriver</property>
+        <property name="firefoxBinary">/opt/firefox-9.0.1/firefox-bin</property>
     </extension>
 
 </arquillian>

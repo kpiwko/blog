@@ -351,6 +351,60 @@
         </profile>
 
         <profile>
+            <id>repeated-drone-execution</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/RepeatedDroneTest*</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>firefox8</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian-ff9.xml</arquillian.xml>
+                                        <reportNameSuffix>ff9</reportNameSuffix>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>chrome17</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <arquillian.xml>arquillian-ch17.xml</arquillian.xml>
+                                        <reportNameSuffix>ch17</reportNameSuffix>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <!-- When built in OpenShift the 'openshift' profile will be used when invoking mvn. -->
             <!-- Use this profile for any OpenShift specific customization your app will need. -->
             <!-- By default that is to put the resulting archive into the 'deployments' folder. -->
@@ -366,8 +420,25 @@
                             <warName>ROOT</warName>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <arquillian.launch>openshift</arquillian.launch>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-openshift-express</artifactId>
+                    <version>1.0.0.Alpha1</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
 
     </profiles>
