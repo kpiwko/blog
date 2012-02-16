@@ -380,9 +380,9 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <arquillian.xml>arquillian-ff9.xml</arquillian.xml>
-                                        <reportNameSuffix>ff9</reportNameSuffix>
+                                        <arquillian.xml>arquillian-ff9.xml</arquillian.xml>                                        
                                     </systemPropertyVariables>
+                                    <reportNameSuffix>ff9</reportNameSuffix>
                                 </configuration>
                             </execution>
                             <execution>
@@ -394,8 +394,8 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <arquillian.xml>arquillian-ch17.xml</arquillian.xml>
-                                        <reportNameSuffix>ch17</reportNameSuffix>
                                     </systemPropertyVariables>
+                                    <reportNameSuffix>ch17</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>
