@@ -78,6 +78,416 @@ To undeploy run this command:
 
 You can also start the JBoss container and deploy the project using JBoss Tools. See the
 Getting Started Guide for Developers for more information.
+
+Testing with Arquillian
+=======================
+
+(check out https://gist.github.com/gists/1848342 to see how this application was created)
+
+1. Remove Java EE 6 Spec BOM file with a Java EE 6 + Tools BOM file in `<dependencyManagement>` section.
+
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill of Materials (BOM). A BOM specifies the versions 
+                of a "stack" (or a collection) of artifacts. We use this here so that we always get the correct versions of artifacts. Here we use 
+                the jboss-javaee-6.0-with tools stack (you can read this as the JBoss stack of the Java EE 6 APIs, with some extras tools for your 
+                project, such as Arquillian for testing) -->
+            <dependency>
+                <groupId>org.jboss.bom</groupId>
+                <artifactId>jboss-javaee-6.0-with-tools</artifactId>
+                <version>1.0.0.M1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+2. Remove Arquillian versions as they are managed by new BOM file
+
+3. (Optional) Remove `<repositories>` sections, they are no longer necessary
+
+4. Update surefire plugin version to 2.10
+
+5. Set **arq-jbossas-remote** as active profile
+
+6. Start JBoss AS 7.1 container from within IDE
+
+Adding Arquillian Drone to the example
+--------------------------------------
+
+Add following artifact to enable Arquillian Ajocado, which is one of the supported UI browsers. See more of supported browser an
+[Arquillian Drone Documentation](https://docs.jboss.org/author/display/ARQ/Drone).
+
+    <dependency>
+        <artifactId>arquillian-ajocado-junit</artifactId>
+        <groupId>org.jboss.arquillian.ajocado</groupId>
+        <type>pom</type>
+        <scope>test</scope>
+    </dependency>
+
+Now, you are able to test you example.
+
+Creating a complete application archive 
+---------------------------------------
+
+This part is based on experimental Maven plugin support for ShrinkWrap. You can get it following these instructions:
+
+1. Get source code and branch to a next branch using following commands
+
+        git clone git://github.com/shrinkwrap/resolver.git
+        cd resolver
+        git checkout origin/next -b next
+
+2. Change version and install source into your local repository
+
+        mvn -batch-mode release:update-versions -DautoVersionSubmodules=true -DdevelopmentVersion=2.0.0-alpha-1-next
+        mvn clean install
+
+3. Add ShrinkWrap Maven resolution depchain and ShrinkWrap Maven plugin to your project
+
+        <dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                    <artifactId>shrinkwrap-resolver-bom</artifactId>
+                    <version>2.0.0-alpha-1-next-SNAPSHOT</version>
+                    <type>pom</type>
+                    <scope>import</scope>
+                </dependency>
+            </dependencies>
+        </dependencyManagement>
+
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-depchain</artifactId>
+            <version>2.0.0-alpha-1-next-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
+    *Note that _shrinkwrap-resolver-bom_ __must__ be placed before Tools Bom file*
+
+4. For current version in order to *MavenImporter* to work, you need to run `mvn clean package` before executing any test from the IDE. This is a     limitation we're currently working on.
+
+5. In your tests, following snippet gives you complete archive to be used for integration testing with Arquillian Drone.
+
+    @Deployment(testable=false)
+    public static Archive<?> getApplicationDeployment() {
+        return ShrinkWrap.create(MavenImporter.class)
+                         .loadEffectivePom("pom.xml")
+                         .importBuildOutput()
+                         .as(WebArchive.class);
+    }
+
+
+Adding support for Arquillian Drone
+-----------------------------------
+
+First, it is reasonable to update to latest Selenium and WebDriver bits available. It does not make much sense to release Arquillian Drone as often as Selenium developers develop Selenium and WebDriver. Therefore, you can override `<dependencyManagement>` section as described in [Arquillian FAQ](https://community.jboss.org/wiki/SpecifyingSeleniumVersionInArquillianDrone)
+
+    <properties>
+        <version.selenium>2.19.0</version.selenium>
+        <version.selenium.server>2.19.0</version.selenium.server>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Selenium Server -->
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-server</artifactId>
+                <version>${version.selenium.server}</version>
+            </dependency> 
+
+            <!-- Selenium dependecies -->
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-api</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-java</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-support</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+
+            <!-- Drivers -->
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-android-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-chrome-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-firefox-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-htmlunit-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-ie-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-iphone-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-remote-driver</artifactId>
+                <version>${version.selenium}</version>
+            </dependency>        
+           
+        </dependencies>
+    </dependencyManagement>
+
+Next, you should add following dependency to enable Arquillian Ajocado. This dependency contains everything you need, including selenium artifacts, selenium-server and appropriate Arquillian Drone bindings. You can consider it being a Depchain for Arquillian Ajocado.
+
+    <dependency>
+        <groupId>org.jboss.arquillian.ajocado</groupId>
+        <artifactId>arquillian-ajocado-junit</artifactId>
+        <type>pom</type>
+        <scope>test</scope>
+    </dependency>
+
+To include support for basic Selenium 1.0 *DefaultSelenium*, you should add following (expecting you won't remove Ajocado depchain)
+
+    <dependency>
+        <groupId>org.jboss.arquillian.extension</groupId>
+        <artifactId>arquillian-drone-selenium</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+The same holds for Selenium 2.0 *WebDriver* support
+
+    <dependency>
+        <groupId>org.jboss.arquillian.extension</groupId>
+        <artifactId>arquillian-drone-webdriver</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+Congratulations, now you're able to use any of the browser which are supported by Arquillian Drone out of the stock!
+
+Executing multiple Drones in a single test
+------------------------------------------
+
+Add following to your test class, which already contains the deployment method:
+
+    @ArquillianResource
+    URL contextPath;
+
+    @Test
+    public void simpleAjocadoTest(@Drone AjaxSelenium ajocado) {
+        ajocado.open(contextPath);
+        ajocado.waitForPageToLoad();
+        Assert.assertTrue(true);
+    }
+
+    @Test
+    public void simpleAjocadoFirefox9Test(@Drone @Firefox9 AjaxSelenium ajocado) {
+        ajocado.open(contextPath);
+        ajocado.waitForPageToLoad();
+        Assert.assertTrue(true);
+    }
+
+    @Test
+    public void simpleWebdriverTest(@Drone FirefoxDriver webdriver) {
+        webdriver.get(contextPath.toString());
+        Assert.assertTrue(true);
+    }
+
+    @Test
+    public void simpleWebdriverChromeTest(@Drone ChromeDriver webdriver) {
+        webdriver.get(contextPath.toString());
+        Assert.assertTrue(true);
+    }
+    
+    @Test
+    public void simpleDefaultSeleniumTest(@Drone DefaultSelenium selenium) {
+        selenium.open(contextPath.toString());
+        selenium.waitForPageToLoad("5000");
+        Assert.assertTrue(true);
+    }
+
+The code shows you following things:
+
+* Drone is able to instantiate _DefaultSelenium_, _AjaxSelenium_ or _WebDriver_ stuff
+* You have the choice to make browser life cycle bound to a method or to a class (if `@Drone` is used to annotate a field)
+* You are able to distinguish between same types of browser using type-safe qualifers
+
+Are you wondering how a qualifier looks like? Here you go:
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Qualifier
+    @Target({ ElementType.FIELD, ElementType.PARAMETER })
+    public @interface Firefox9 {
+    }
+
+Now the most interesting point. Where is the browser configuration? Sure, it is hold in *arquillian.xml* file
+    
+    <extension qualifier="ajocado">
+        <property name="browser">*firefox</property>
+    </extension>
+
+    <!-- this configuration will be used by @Firefox9 annotated browsers -->
+    <extension qualifier="ajocado-firefox9">
+        <property name="browser">*firefox /opt/firefox-9.0.1/firefox-bin</property>
+    </extension>
+
+    <extension qualifier="webdriver">
+        <property name="chromeBinary">/opt/google/chrome/chrome</property>
+        <property name="chromeSwitches">--user-data-dir=/tmp --disable-web-security</property>
+    </extension>
+
+*Note that I need to set up Chrome because I use non standard setup at my desktop, this step might not be needed at your place!* 
+
+Executing a single test multiple times with different Drones
+------------------------------------------------------------
+
+This step is more interesting if you have to repeat execution. You have multiple ways how this can be done, I personally prefer running
+multiple executions of Maven Surefire plugin. You can set a distinct profile to do that:
+
+    <profile>
+        <id>repeated-drone-execution</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <includes>
+                            <include>**/RepeatedDroneTest*</include>
+                        </includes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>default-test</id>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>firefox8</id>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <arquillian.xml>arquillian-ff9.xml</arquillian.xml>
+                                </systemPropertyVariables>
+                                <reportNameSuffix>ff9</reportNameSuffix>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>chrome17</id>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <systemPropertyVariables>
+                                    <arquillian.xml>arquillian-ch17.xml</arquillian.xml>                               
+                                </systemPropertyVariables>
+                            <reportNameSuffix>ch17</reportNameSuffix>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+I've overriden *default-test* execution as well. In combination with *<reportNameSuffix>* it will give me a nicer test report. So how does Arquillian execution work here? The trick is to have multiple *arquillian.xml* files, which are passed to configure Arquillian. Then every execution has its own settings and thus completely different browser.
+
+See the test:
+
+    @ArquillianResource
+    URL contextPath;
+
+    @Test
+    public void simpleWebdriverTest(@Drone WebDriver webdriver) {
+        webdriver.get(contextPath.toString());
+
+        webdriver.findElement(By.id("name")).sendKeys("Samuel");
+        webdriver.findElement(By.id("email")).sendKeys("samuel@vimes.dw");
+        webdriver.findElement(By.id("phoneNumber")).sendKeys("1234567890");
+        webdriver.findElement(By.id("register")).submit();
+
+        // FIXME with Ajocado, you can wait for a request
+        Assert.assertTrue(true);
+    }
+
+Running in OpenShift
+--------------------
+
+If you want to test you application in the cloud, there is nothing easier than to simply switch the container configuration 
+from AS7 running on your instance to OpenShift instance. Arquillian Drone won't care, it will find your application, so no
+modification of the tests is required.
+
+Let's create a distinct Maven profile:
+
+    <profile>            
+        <id>openshift</id>
+        <build>
+            <plugins>                 
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <arquillian.launch>openshift</arquillian.launch>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+        
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-openshift-express</artifactId>
+                <version>1.0.0.Alpha1</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </profile>
+
+*Note `arquillian.launch` property. It allows you to select a non-default configuration from your `arquillian.xml` file*
+Next, you want to provide a configuration for OpenShift in your `arquillian.xml` file:
+
+    <container qualifier="openshift">
+        <configuration>
+            <property name="namespace">arqtest</property>
+            <property name="application">drone</property>
+            <property name="sshUserName"><!-- UUID --></property>
+            <!-- Passphrase can be specified by defining the environment variable SSH_PASSPHRASE -->
+            <!-- <property name="passphrase"></property> -->
+            <property name="login">kpiwko@redhat.com</property>
+        </configuration>
+    </container>
+
+You'll get required information when the application is created via command line or tools. You can also
+check OpenShift management interface. 
+
+That's it. You can test your application using OpenShift container.
+
+Happy Drone testing!
+
+
  
 Running the Arquillian tests
 ============================
