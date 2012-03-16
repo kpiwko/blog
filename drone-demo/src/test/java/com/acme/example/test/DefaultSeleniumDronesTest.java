@@ -13,11 +13,11 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenImporter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+
+import com.thoughtworks.selenium.DefaultSelenium;
 
 @RunWith(Arquillian.class)
-public class RepeatedDroneTest {
+public class DefaultSeleniumDronesTest {
 
     @ArquillianResource
     URL contextPath;
@@ -28,15 +28,9 @@ public class RepeatedDroneTest {
     }
 
     @Test
-    public void simpleWebdriverTest(@Drone WebDriver webdriver) {
-        webdriver.get(contextPath.toString());
-
-        webdriver.findElement(By.id("name")).sendKeys("Samuel");
-        webdriver.findElement(By.id("email")).sendKeys("samuel@vimes.dw");
-        webdriver.findElement(By.id("phoneNumber")).sendKeys("1234567890");
-        webdriver.findElement(By.id("register")).submit();
-
-        // FIXME with Ajocado, you can wait for a request
+    public void simpleDefaultSeleniumTest(@Drone DefaultSelenium selenium) {
+        selenium.open(contextPath.toString());
+        selenium.waitForPageToLoad("5000");
         Assert.assertTrue(true);
     }
 
