@@ -1,39 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-   <groupId>org.jboss.tools.example.html5</groupId>
-   <artifactId>poh5</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+    <groupId>org.jboss.tools.example.html5</groupId>
+    <artifactId>poh5</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
-   <name>poh5</name>
+    <name>poh5</name>
     <description>An AeroGear and Java EE 6 HTML5 mobile web application for use with JBoss.</description>
     <url>http://jboss.org/aerogear</url>
 
     <properties>
-      <!-- Explicitly declaring the source encoding eliminates the following
-         message: -->
-      <!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered
-         resources, i.e. build is platform dependent! -->
+        <!-- Explicitly declaring the source encoding eliminates the following
+            message: -->
+        <!-- [WARNING] Using platform encoding (UTF-8 actually) to copy filtered
+            resources, i.e. build is platform dependent! -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Timestamp format for the maven.build.timestamp property -->
-      <!-- You can reference property in pom.xml or filtered resources (must
-         enable third-party plugin if using Maven < 2.1) -->
-      <javaee6.web.spec.version>2.0.0.Final</javaee6.web.spec.version>
-      <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
-      <!-- Alternatively, comment out the above line, and un-comment the line below to
-        use version 3.0.0.Beta1-redhat-1 which is a release certified
-      to work with JBoss EAP 6. It requires you have access to the JBoss EAP 6 maven repository. -->
-      <!--
-      <javaee6.web.spec.version>3.0.0.Beta1-redhat-1</javaee6.web.spec.version>
-      -->
+        <!-- You can reference property in pom.xml or filtered resources (must
+            enable third-party plugin if using Maven < 2.1) -->
+        <javaee6.web.spec.version>2.0.0.Final</javaee6.web.spec.version>
+        <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
+        <!-- Alternatively, comment out the above line, and un-comment the line below to
+            use version 3.0.0.Beta1-redhat-1 which is a release certified
+            to work with JBoss EAP 6. It requires you have access to the JBoss EAP 6 maven repository. -->
+        <!--
+            <javaee6.web.spec.version>3.0.0.Beta1-redhat-1</javaee6.web.spec.version>
+        -->
         <wro4j.version>1.4.4</wro4j.version>
-        
-        <!-- Versions not covered in jboss-javaee-web-6.0 BOM  -->
+
+        <!-- Versions not covered in jboss-javaee-web-6.0 BOM -->
         <version.org.hibernate-jpamodelgen>1.1.1.Final</version.org.hibernate-jpamodelgen>
         <version.org.jboss.arquillian>1.0.0.CR7</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.drone>1.0.0.CR4</version.org.jboss.arquillian.drone>
         <version.org.jboss.as.arquillian.container>7.1.0.Final</version.org.jboss.as.arquillian.container>
         <version.junit>4.10</version.junit>
     </properties>
@@ -49,11 +51,29 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including 
-            a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
-            a collection) of artifacts. We use this here so that we always get the correct 
-            versions of artifacts. Here we use the jboss-javaee-web-6.0 stack (you can 
-            read this as the JBoss stack of the Java EE Web Profile 6 APIs) -->
+            <!-- Arquillian lets test you your applications in real environment -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Arquillian Drone adds support for visual testing of your application -->
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-bom</artifactId>
+                <version>${version.org.jboss.arquillian.drone}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
+                a collection) of artifacts. We use this here so that we always get the correct
+                versions of artifacts. Here we use the jboss-javaee-web-6.0 stack (you can
+                read this as the JBoss stack of the Java EE Web Profile 6 APIs) -->
             <dependency>
                 <groupId>org.jboss.spec</groupId>
                 <artifactId>jboss-javaee-web-6.0</artifactId>
@@ -63,7 +83,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <dependencies>
         <!-- First declare the APIs we depend on and need for compilation. All of them are provided by JBoss -->
 
@@ -159,10 +179,18 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+            <version>${org.jboss.arquillian.drone}</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
-        <!-- Maven will append the version to the finalName (which is the name given to the generated war, and hence the context 
+        <!-- Maven will append the version to the finalName (which is the name given to the generated war, and hence the context
             root) -->
         <finalName>${project.artifactId}</finalName>
         <plugins>
@@ -190,7 +218,7 @@
                 <artifactId>jboss-as-maven-plugin</artifactId>
                 <version>7.1.0.Final</version>
             </plugin>
-            
+
             <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
@@ -202,7 +230,7 @@
                     </mapping>
                     <strictCheck>true</strictCheck>
                     <includes>
-                    <include>src/**</include>
+                        <include>src/**</include>
                     </includes>
                     <excludes>
                         <exclude>src/main/webapp/js/libs/**</exclude>
@@ -215,7 +243,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <!-- The default profile skips all tests, though you can tune it to run just unit tests based on a custom pattern -->
@@ -228,7 +256,7 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.4.3</version>
+                        <version>2.11</version>
                         <configuration>
                             <skip>true</skip>
                         </configuration>
@@ -266,7 +294,8 @@
             <build>
                 <pluginManagement>
                     <plugins>
-                        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven
+                            build itself. -->
                         <plugin>
                             <groupId>org.eclipse.m2e</groupId>
                             <artifactId>lifecycle-mapping</artifactId>
@@ -408,5 +437,5 @@
             </dependencies>
         </profile>
     </profiles>
-    
+
 </project>
