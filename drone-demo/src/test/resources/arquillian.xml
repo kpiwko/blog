@@ -15,7 +15,7 @@
     <container qualifier="jboss" default="true">
         <!-- If you want to use the JBOSS_HOME environment variable, just delete the jbossHome property -->
         <configuration>
-            <property name="jbossHome">/home/kpiwko/jboss-as-7.1.0.CR1b</property>
+            <!-- <property name="jbossHome">/home/kpiwko/apps/jboss-as-7.1.1.Final</property> -->
         </configuration>
     </container>
 
@@ -30,19 +30,24 @@
         </configuration>
     </container>
 
-    <extension qualifier="ajocado">
+    <extension qualifier="graphene">
         <property name="browser">*firefox</property>
     </extension>
 
-    <extension qualifier="ajocado-firefox9">
+    <extension qualifier="graphene-firefox9">
         <property name="browser">*firefox /opt/firefox-9.0.1/firefox-bin</property>
     </extension>
-    
-    <extension qualifier="ajocado-firefox10">
-        <property name="browser">*firefox /opt/firefox-10.0.1/firefox-bin</property>
+
+    <extension qualifier="graphene-firefox10">
+        <property name="browser">*firefox /opt/firefox-10.0.2/firefox-bin</property>
     </extension>
 
     <extension qualifier="webdriver">
+        <property name="browserCapabilities">firefox</property>
+        <!--
+            <property name="remoteAddress">http://localhost:24444/wd/hub</property>
+        -->
+        <property name="firefoxBinary">/opt/firefox-9.0.1/firefox-bin</property>
         <property name="chromeBinary">/opt/google/chrome/chrome</property>
         <property name="chromeSwitches">--user-data-dir=/tmp --disable-web-security</property>
     </extension>

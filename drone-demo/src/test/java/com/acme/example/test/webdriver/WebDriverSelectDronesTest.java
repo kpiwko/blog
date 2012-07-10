@@ -1,4 +1,4 @@
-package com.acme.example.test;
+package com.acme.example.test.webdriver;
 
 import java.net.URL;
 
@@ -7,14 +7,13 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenImporter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+
+import com.acme.example.test.Deployments;
 
 @RunWith(Arquillian.class)
 public class WebDriverSelectDronesTest {
@@ -24,7 +23,7 @@ public class WebDriverSelectDronesTest {
 
     @Deployment(testable = false)
     public static Archive<?> getApplicationDeployment() {
-        return ShrinkWrap.create(MavenImporter.class).loadEffectivePom("pom.xml").importBuildOutput().as(WebArchive.class);
+        return Deployments.createDeployment();
     }
 
     @Test
