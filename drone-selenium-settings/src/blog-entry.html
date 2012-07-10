@@ -1,0 +1,414 @@
+<body>
+
+	<h1>Functional Testing with Arquillian</h1>
+	<p>Arquillian is not only a great tool for testing inside of the
+		container but it greatly reduces the effort for functional testing. In
+		the following article, I'll show you how to easily use it to test a
+		web Uof the application you're building.</p>
+
+	<h2>Getting Started</h2>
+	<p>This article exercises following technologies:</p>
+	<ul>
+		<li><a href="http://www.jboss.org/arquillian">Arquillian</a>, <a
+			href="https://docs.jboss.org/author/display/ARQ/Home">Arquillian
+				documentation</a>
+		</li>
+		<li>Arquillian Drone, <a
+			href="https://docs.jboss.org/author/display/ARQ/Drone">Arquillian
+				Drone documentation</a>
+		</li>
+		<li>ShrinkWrap Maven Resolver</li>
+		<li><a href="http://code.google.com/p/selenium/">Selenium</a>
+		</li>
+	</ul>
+
+	<p>The first three are a part of JBoss testing umbrella, the tests
+		themselves are based on Selenium. If you are already familiar with
+		Selenium, you'll find that Arquillian manages not only a container
+		life cycle but it makes your live easier even w.r.t. Selenium life
+		cycle. If Selenium is a new stuff to you, you might find that it is
+		exactly the missing part in your tests.</p>
+
+	<h3>Explaining the concepts of in-container and client testing</h3>
+
+	<p>If you'd ever written an Arquillian based test, you know that it
+		looks almost the same as others tests in the framework you're using. I
+		prefer JUnit here, so let's make an example:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+@RunWith(Arquillian.class)
+public class BasicInContainerTest {
+    
+    @Deployment
+    public static JavaArchive createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class)
+            .addClass(MyBean.class);
+    }
+    
+    @Inject
+    MyBean bean;
+
+    @Test
+    public void testBeanInstance() {
+        Assert.assertNotNull(bean);
+        ..
+    }
+}
+    </pre>
+	<p>So you've deployed a CDbean implementation on the server, and it
+		your tests your injecting the instance and asserting it is working
+		correctly. This means that Arquillian enriches the archive, connects
+		to the server itself, running inside of the container. This is
+		actually the default behavior. This way, the JUnit test runner
+		communicates with Arquillian, tests are executed in server JVM and
+		results are pushed back. JUnit runner is actually a client here.</p>
+
+	<p>The client mode is the second mode of Arquillian testing. This
+		way the tests are executed in the same JVM as the client is running
+		and the testing archive is not enriched. This means you loose the
+		possibility of retrieving objects from server JVM during testing,
+		however Arquillian still controls deployement, undeployment and life
+		cycle of the container</p>
+
+	<h3>How to activate client mode?</h3>
+
+	<p>
+		This is very easy. You can either mark a deployment non-testable on
+		server, meaning Arquillian will not enrich the archive at all, or you
+		can mark a specified method with an annotation
+		<tt>@RunAsClient</tt>
+		. Want an example? Here you are:
+	</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+@RunWith(Arquillian.class)
+public class BasicClientTest {
+    
+    @Deployment(testable=false)
+    public static WebArchive createDeployment() {
+        return ShrinkWrap.create(WebArchive.class)
+            .addClasses(MyBean.class)
+            .setWebXML("WEB-INF/web.xml");
+    }
+    
+    @Test
+    public void testLogin() {
+        ...
+    }
+}    
+    </pre>
+
+	<p>
+		Having possibility to annotate a method by
+		<tt>@RunAsClient</tt>
+		means that Arquillian can run in a mixed mode, giving you the best of
+		both worlds:
+	</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+    ...
+    @Deployment
+    public static JavaArchive createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class)
+            .addClass(MyBean.class);
+    }
+    
+    @Inject
+    MyBean bean;
+
+    @Test
+    public void testBeanInstance() {
+        // this is executed in the server JVM
+    }
+    
+    @Test
+    @RunAsClient
+    public void testFromClient() {
+        // this is executed in the client JVM
+    }
+    ...
+    </pre>
+
+	<h2>Using Arquillian Drone</h2>
+
+	<p>That was a bit of theory. Let's get back to Arquillian Drone.
+		Arquillian Drone is an extension written in order to manage the life
+		cycle of other objects then servers, to be precise testing browsers.</p>
+
+	<p>Currently, the list of supported browsers is pretty large, let's
+		mention SeleniumServer, Selenium, WebDriver and Arquillian Ajocado. As
+		well as Arquillian, Arquillian Drone is pretty extensible, so if your
+		favorite testing browser is not supported, you'll find easy to add the
+		support.</p>
+
+	<p>Arquillian Drone bootstraps the tooling required for testing
+		browser in order to work (e.g. Selenium Server), than it creates
+		instances of testing browser and properly disposes them after the test
+		is finished. You only have to write the logic of the test,
+		concentrating on what you should.</p>
+
+	<h3>Maven configuration</h3>
+
+	<p>
+		This example is build in Maven and tests are configured against JBoss
+		AS 7.0.1 container. The code can be found on github, at <a
+			href="https://github.com/kpiwko/blog/tree/master/drone-selenium">https://github.com/kpiwko/blog/tree/master/drone-selenium</a>.
+		Let's go through Maven dependencies:
+	</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="xml">
+&lt;properties&gt;
+    &lt;version.arquillian_core&gt;1.0.0.CR5&lt;/version.arquillian_core&gt;
+    &lt;version.arquillian_drone&gt;1.0.0.CR2&lt;/version.arquillian_drone&gt;
+    &lt;version.jbossas_7&gt;7.0.1.Final&lt;/version.jbossas_7&gt;
+    &lt;version.junit&gt;4.8.2&lt;/version.junit&gt;
+&lt;/properties&gt;
+
+&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.jboss.arquillian&lt;/groupId&gt;
+            &lt;artifactId&gt;arquillian-bom&lt;/artifactId&gt;
+            &lt;version&gt;${version.arquillian_core}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.jboss.arquillian.extension&lt;/groupId&gt;
+            &lt;artifactId&gt;arquillian-drone-bom&lt;/artifactId&gt;
+            &lt;version&gt;${version.arquillian_drone}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;    
+    </pre>
+
+	<p>This specifies versions of required tooling, including Selenium.
+		In your dependencies, you'll have to add following artifacts:</p>
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="xml">
+&lt;!-- test dependencies --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.arquillian.junit&lt;/groupId&gt;
+    &lt;artifactId&gt;arquillian-junit-container&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;junit&lt;/groupId&gt;
+    &lt;artifactId&gt;junit&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+    &lt;version&gt;${version.junit}&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.arquillian.extension&lt;/groupId&gt;
+    &lt;artifactId&gt;arquillian-drone-impl&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Support for Selenium in Arquillian Drone --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.arquillian.extension&lt;/groupId&gt;
+    &lt;artifactId&gt;arquillian-drone-selenium&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Support for Selenium Server in Arquillian Drone --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.arquillian.extension&lt;/groupId&gt;
+    &lt;artifactId&gt;arquillian-drone-selenium-server&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Selenium --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
+    &lt;artifactId&gt;selenium-java&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Selenium Server --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
+    &lt;artifactId&gt;selenium-server&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Selenium Server dependency, feel free to use different slf4j implementation --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+    &lt;artifactId&gt;slf4j-simple&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;    
+    </pre>
+
+	<p>Our example is using ShrinkWrap Maven Resolver to interact with
+		Maven repository from the test itself, so you must include it as well:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="xml">
+&lt;!-- Resolution of JAR libraries into WAR archive --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.shrinkwrap.resolver&lt;/groupId&gt;
+    &lt;artifactId&gt;shrinkwrap-resolver-impl-maven&lt;/artifactId&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+    </pre>
+
+	<p>Finally, you have to specify the dependency on container. JBoss
+		AS 7.0.1 is extremely fast at startup, so let's Arquillian manage its
+		life cycle:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.as&lt;/groupId&gt;
+    &lt;artifactId&gt;jboss-as-arquillian-container-managed&lt;/artifactId&gt;
+    &lt;version&gt;${version.jbossas_7}&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+    </pre>
+
+	<h3>Creating a test deployment</h3>
+
+	<p>While running in test mode, you have to make sure you deploy all
+		the required bits. So, you're deployment method might be a bit more
+		complex but there's nothing to worry about. Here is a commented
+		example:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+public static final String WEBAPP_SRC = "src/main/webapp";
+
+@Deployment(testable=false)
+public static WebArchive createLoginScreenDeployment() {
+    MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
+
+    return ShrinkWrap.create(WebArchive.class, "cdi-login.war")
+            .addClasses(Credentials.class, LoggedIn.class, Login.class, User.class, UsersProducer.class)
+            .addAsResource("import.sql")                
+            .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
+            .addAsWebResource(new File(WEBAPP_SRC, "index.html"))
+            .addAsWebResource(new File(WEBAPP_SRC, "home.xhtml"))
+            .addAsWebResource(new File(WEBAPP_SRC, "users.xhtml"))
+            .addAsWebResource(new File(WEBAPP_SRC, "template.xhtml"))
+            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+            .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/faces-config.xml"))
+            .addAsLibraries(resolver.artifact("org.jboss.seam.solder:seam-solder").resolveAsFiles())
+            .setWebXML(new File(WEBAPP_SRC, "WEB-INF/web.xml"));
+}
+    </pre>
+
+	<p>
+		Here I'm enumerating all the files to illustrate the idea. However,
+		ShrinkWrap can add a package, directory and so on, so your method will
+		likely be shorter. I'm creating a WAR archive to be deployed named
+		<tt>cdi-login.war</tt>
+		. I include all classes, import.sql to populate database with data,
+		test persistence descriptor, all the jsf pages, web and CDI bean
+		descriptor.
+	</p>
+
+	<p>
+		As I'm using Seam 3 in the example, I'm including all the required
+		libraries as well. Here the
+		<tt>resolver</tt>
+		is configured using metadata available in the
+		<tt>pom.xml</tt>
+		file, which defines the project. It collects dependency versions,
+		mirrors, repositories etc. and then you can simply specify groupId and
+		artifactId to get the Seam Solder. ShrinkWrap Maven Resolver will
+		actually search the local Maven repository and if required and not
+		configured otherwise remote repositories as well and fetches Seam
+		Solder including all required transitive dependencies. Then jar files
+		are packaged in
+		<tt>WEB-INF/lib</tt>
+		directory.
+	</p>
+
+	<h3>Adding a Selenium browser</h3>
+
+	<p>
+		As you probably noticed, I added Selenium, Selenium Server and
+		corresponding Drone extensions to dependencies in
+		<tt>pom.xml</tt>
+		file. It's time to used them in the test:
+	</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+@RunWith(Arquillian.class)
+public class BasicClientTest {
+    ...
+    @Drone DefaultSelenium browser;
+    ...
+    </pre>
+
+	<p>That's it! Specify this as a field in the test and Arquillian
+		Drone extension will create an instance of DefaultSelenium browser
+		before the first client test is run and injects the instance. Here I'm
+		using DefaultSelenium, which requires Selenium Server running.
+		However, because I've included Arquillian Drone Extension for Selenium
+		Server, it will be started as well and the browser connects to it
+		automatically. Do not pollute your tests with unnecessary code, keep
+		them simple!</p>
+
+	<p>Oh wait, there one more thing. I'm testing web UI but how do I
+		know the URL? Arquillian has already a solution:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+@RunWith(Arquillian.class)
+public class BasicClientTest {
+    ...
+    @ArquillianResource URL deploymentURL;
+    ...
+    </pre>
+
+	<p>Now even the URL of your deployed archive is injected in the
+		test. You can verify the functionality of the web application:</p>
+
+	<pre class="jive_text_macro jive_macro_code" jivemacro="code"
+		___default_attr="java">
+    ...
+    private static final String USERNAME_FIELD = "id=loginForm:username";
+    private static final String PASSWORD_FIELD = "id=loginForm:password";
+
+    private static final String LOGIN_BUTTON = "id=loginForm:login";
+
+    private static final String TIMEOUT = "15000";
+    
+    @Test
+    public void testLoginAndLogout() {
+        driver.open(deploymentUrl + "home.jsf");
+
+        driver.type(USERNAME_FIELD, "demo");
+        driver.type(PASSWORD_FIELD, "demo");
+        driver.click(LOGIN_BUTTON);
+        driver.waitForPageToLoad(TIMEOUT);
+
+        Assert.assertTrue("User should be logged in!", driver.isElementPresent(LOGGED_IN));
+           
+    }
+    ...
+    </pre>
+
+	<p>Easy! You've just tested in the browser that your application
+		login page works correctly.</p>
+
+	<p>If you liked the article, stay tuned. There is a lot in
+		Arquillian Drone more to cover, such as configuration of the
+		Arquillian Drone, running different browsers; Arquillian Ajocado
+		(Selenium on steroids with an excellent AJAX support included) or
+		WebDriver; multiple browser instances, handling https requests, mobile
+		devices testing and writing support for your own browser.</p>
+
+	<p>Arquillian makes integration testing a breeze. Arquillian Drone
+		adds a great support for functional tests. Together, they will make
+		developing tests fun again.</p>
+</body>
