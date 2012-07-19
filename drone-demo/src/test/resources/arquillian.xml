@@ -19,6 +19,7 @@
         </configuration>
     </container>
 
+    <!-- Example configuration for OpenShift container -->
     <container qualifier="openshift">
         <configuration>
             <property name="namespace">arqtest</property>
@@ -30,6 +31,15 @@
         </configuration>
     </container>
 
+    <!-- configuration for WebDrivers -->
+    <extension qualifier="webdriver">
+        <property name="browserCapabilities">${browser:firefox}</property>
+        <property name="firefoxBinary">/opt/firefox-9.0.1/firefox-bin</property>
+        <property name="chromeBinary">/opt/google/chrome/chrome</property>
+        <property name="chromeSwitches">--user-data-dir=/tmp --disable-web-security</property>
+    </extension>
+
+    <!-- configuration for Graphenes -->
     <extension qualifier="graphene">
         <property name="browser">*firefox</property>
     </extension>
@@ -42,14 +52,10 @@
         <property name="browser">*firefox /opt/firefox-10.0.2/firefox-bin</property>
     </extension>
 
-    <extension qualifier="webdriver">
-        <property name="browserCapabilities">firefox</property>
-        <!--
-            <property name="remoteAddress">http://localhost:24444/wd/hub</property>
-        -->
-        <property name="firefoxBinary">/opt/firefox-9.0.1/firefox-bin</property>
-        <property name="chromeBinary">/opt/google/chrome/chrome</property>
-        <property name="chromeSwitches">--user-data-dir=/tmp --disable-web-security</property>
+
+    <!-- configuration for DefaultSeleniums -->
+    <extension qualifier="selenium">
+        <!-- we don't set anything here -->
     </extension>
 
 </arquillian>

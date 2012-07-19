@@ -14,6 +14,11 @@ import com.acme.example.model.Member;
 import com.acme.example.rest.MemberService;
 import com.acme.example.util.Resources;
 
+/**
+ *
+ * @author <a href="mailto:kpiwko@redhat.com">Karel Piwko</a>
+ *
+ */
 public class Deployments {
 
     private static final String WEBAPP_SRC = "src/main/webapp";
@@ -27,7 +32,7 @@ public class Deployments {
         return addWebResourcesTo(ShrinkWrap.create(WebArchive.class, "demo.war"))
                 .addPackages(true, Member.class.getPackage(), MemberService.class.getPackage(), Resources.class.getPackage())
                 .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
-                .addAsResource("META-INF/persistence.xml", "import.sql");
+                .addAsResource("import.sql", "import.sql");
 
     }
 
