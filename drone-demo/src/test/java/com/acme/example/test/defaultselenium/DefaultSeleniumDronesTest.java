@@ -8,6 +8,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +16,7 @@ import com.acme.example.test.Deployments;
 import com.thoughtworks.selenium.DefaultSelenium;
 
 @RunWith(Arquillian.class)
+@Ignore
 public class DefaultSeleniumDronesTest {
 
     @ArquillianResource

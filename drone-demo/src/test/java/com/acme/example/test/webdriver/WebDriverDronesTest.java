@@ -1,6 +1,5 @@
 package com.acme.example.test.webdriver;
 
-import java.io.File;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -8,7 +7,6 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,8 +25,6 @@ public class WebDriverDronesTest {
     @Deployment(testable = false)
     public static Archive<?> getApplicationDeployment() {
         WebArchive war =  Deployments.createDeployment();
-
-        //war.as(ZipExporter.class).exportTo(new File("/tmp/foo.war"));
 
         return war;
     }
