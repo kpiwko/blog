@@ -45,7 +45,7 @@ public class Deployments {
         final File webAppDirectory = new File(WEBAPP_SRC);
         for (File file : FileUtils.listFiles(webAppDirectory)) {
             if (!file.isDirectory()) {
-                archive.addAsWebResource(file, file.getPath().substring(WEBAPP_SRC.length()));
+                archive.addAsWebResource(file, FileUtils.getArchivePath(WEBAPP_SRC, file));
             }
         }
         return archive;
@@ -68,6 +68,15 @@ public class Deployments {
                 }
             }
             return allFiles;
+        }
+
+        public static String getArchivePath(String prefix, File file) {
+            if (file == null) {
+                throw new IllegalArgumentException("File to be archived must not be null.");
+            }
+            // we have to have file system independent packages
+            int prefixLength = prefix != null ? prefix.length() : 0;
+            return file.getPath().substring(prefixLength).replace(File.separatorChar, '/');
         }
     }
 }
