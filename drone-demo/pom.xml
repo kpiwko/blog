@@ -18,7 +18,7 @@
         <!-- Timestamp format for the maven.build.timestamp property -->
         <!-- You can reference property in pom.xml or filtered resources (must enable third-party plugin if using Maven < 2.1) -->
         <version.org.jboss.arquillian>1.0.1.Final</version.org.jboss.arquillian>
-        <version.org.jboss.arquillian.extension.drone>1.1.0.CR1</version.org.jboss.arquillian.extension.drone>
+        <version.org.jboss.arquillian.extension.drone>1.1.0.CR2</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.shrinkwrap.resolver>2.0.0-alpha-1</version.org.jboss.shrinkwrap.resolver>
 
         <!-- default webdriver browser -->
@@ -360,7 +360,7 @@
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
                     <artifactId>arquillian-openshift-express</artifactId>
-                    <version>1.0.0.Alpha2</version>
+                    <version>1.0.0.Beta1</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
