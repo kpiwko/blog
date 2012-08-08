@@ -23,6 +23,7 @@ import com.acme.example.util.Resources;
 public class Deployments {
 
     private static final String WEBAPP_SRC = "src/main/webapp";
+    private static final String QUNIT_SRC = "src/test/qunit";
 
     public static WebArchive createDeployment() {
         /*
@@ -30,10 +31,13 @@ public class Deployments {
          * DependencyResolvers.use(MavenDependencyResolver.class).goOffline() .loadEffectivePom("pom.xml");
          */
 
-        WebArchive war = addWebResourcesTo(ShrinkWrap.create(WebArchive.class, "demo.war"))
+        WebArchive war = addWebResourcesTo(ShrinkWrap.create(WebArchive.class, "demo.war"), WEBAPP_SRC)
                 .addPackages(true, Member.class.getPackage(), MemberService.class.getPackage(), Resources.class.getPackage())
                 .addAsResource("META-INF/persistence.xml", "META-INF/persistence.xml")
                 .addAsResource("import.sql", "import.sql");
+
+        // add test stuff
+        war = addWebResourcesTo(war, QUNIT_SRC);
 
         war.as(ZipExporter.class).exportTo(new File("target/demo.war"), true);
 
@@ -41,11 +45,11 @@ public class Deployments {
 
     }
 
-    private static WebArchive addWebResourcesTo(WebArchive archive) {
-        final File webAppDirectory = new File(WEBAPP_SRC);
+    private static WebArchive addWebResourcesTo(WebArchive archive, String path) {
+        final File webAppDirectory = new File(path);
         for (File file : FileUtils.listFiles(webAppDirectory)) {
             if (!file.isDirectory()) {
-                archive.addAsWebResource(file, FileUtils.getArchivePath(WEBAPP_SRC, file));
+                archive.addAsWebResource(file, FileUtils.getArchivePath(path, file));
             }
         }
         return archive;

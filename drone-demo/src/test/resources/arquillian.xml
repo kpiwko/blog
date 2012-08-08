@@ -34,7 +34,7 @@
 
     <!-- configuration for WebDrivers -->
     <extension qualifier="webdriver">
-        <property name="browserCapabilities">${browser:firefox}</property>
+        <property name="browserCapabilities">${browser}</property>
         <!-- ARQ-1048 these properties are not used at all for RemoteWebDriver -->
         <property name="firefoxBinary">/opt/firefox-9.0.1/firefox-bin</property>        
         <property name="chromeBinary">/opt/google/chrome/chrome</property>
