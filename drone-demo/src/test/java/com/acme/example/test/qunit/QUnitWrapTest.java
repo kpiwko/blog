@@ -1,5 +1,6 @@
 package com.acme.example.test.qunit;
 
+import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -24,13 +25,16 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.acme.example.test.ArchiveUtils;
 import com.acme.example.test.Deployments;
 import com.google.common.base.Function;
 
 @RunWith(Arquillian.class)
 public class QUnitWrapTest {
 
-    private static final long QUNIT_EXECUTION_TIMEOUT_IN_SECONDS = 180;
+    private static final String QUNIT_SRC = "src/test/qunit";
+
+    private static final long QUNIT_EXECUTION_TIMEOUT_IN_SECONDS = 10;
 
     @ArquillianResource
     URL contextPath;
@@ -41,13 +45,14 @@ public class QUnitWrapTest {
     @Rule
     public ErrorCollector collector = new ErrorCollector();
 
-    List<String> urls = Arrays.asList("qunit-tests1.html");
+    // list of urls to be tested
+    private List<String> urls = Arrays.asList("qunit-tests1.html");
 
     @Deployment(testable = false)
     public static Archive<?> getApplicationDeployment() {
         WebArchive war = Deployments.createDeployment();
-
-        return war;
+        // add qunit resources to the archive
+        return ArchiveUtils.addWebResourcesRecursively(war, new File(QUNIT_SRC));
     }
 
     @Test
