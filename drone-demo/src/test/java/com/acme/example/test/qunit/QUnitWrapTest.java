@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
@@ -81,15 +82,22 @@ public class QUnitWrapTest {
             totalFailures = totalFailures + failedTestCount;
             totalPasses = totalPasses + passedTestCount;
 
-            if (failedTestCount > 0) {
-                List<WebElement> failedTestCases = driver.findElement(By.id("qunit-tests")).findElements(
-                        By.xpath("li[@class='fail']/strong"));
-                // Add the test case names to the failure list.
-                for (WebElement failedTestCase : failedTestCases) {
-                    collector.addError(new QUnitTestFailure(MessageFormat.format("QUnit test {0} failed",
-                            failedTestCase.getText())));
-                }
+            List<WebElement> failedTestCases = driver.findElement(By.id("qunit-tests")).findElements(
+                    By.xpath("li[@class='fail']/strong"));
+            List<WebElement> passedTestCases = driver.findElement(By.id("qunit-tests")).findElements(
+                    By.xpath("li[@class='pass']/strong"));
+
+            // Add the test case names to the failure list.
+            for (WebElement failedTestCase : failedTestCases) {
+                collector.checkThat(MessageFormat.format("QUnit test {0} failed", failedTestCase.getText()), false,
+                        CoreMatchers.is(true));
             }
+            // Add the test case names to the passed list.
+            for (WebElement passedTestCase : passedTestCases) {
+                collector.checkThat(MessageFormat.format("QUnit test {0} passed", passedTestCase.getText()), true,
+                        CoreMatchers.is(true));
+            }
+
         }
 
     }
@@ -139,14 +147,4 @@ public class QUnitWrapTest {
             }
         }
     }
-
-    protected static class QUnitTestFailure extends Exception {
-
-        private static final long serialVersionUID = 1L;
-
-        public QUnitTestFailure(String message) {
-            super(message);
-        }
-    }
-
 }
